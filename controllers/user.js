@@ -3,6 +3,7 @@ const bcrypt = require( 'bcrypt' );
 const otp_generator = require( 'otp-generator' );
 const jwt = require( 'jsonwebtoken' );
 const fs = require('fs')
+const sendEmail = require('../utils/email')
 const cloudinary = require('../config/cloudinary')
 
 exports.signUp = async ( req, res ) => {
@@ -16,7 +17,7 @@ exports.signUp = async ( req, res ) => {
             } );
         }
 
-        const saltedRounds = await bcrypt.genSalt( process.env.BCRYPT_SALT_ROUNDS );
+        const saltedRounds = await bcrypt.genSalt(10);
         const hashPassword = await bcrypt.hash( password, saltedRounds );
         const otp = otp_generator.generate( 6, { upperCaseAlphabets: false, lowerCaseAlphabets: false, specialChars: false } );
 
@@ -79,8 +80,8 @@ exports.verifyEmail = async ( req, res ) => {
 
         await user.save();
 
-        res.json( 200 ).json( {
-            message: 'Email verified Successfuly',
+        res.status(200).json( {
+            message:'Email verified Successfuly',
             data: user
         } );
     } catch ( error ) {
@@ -117,7 +118,7 @@ exports.login = async ( req, res ) => {
         const token = await jwt.sign( {
             id: user._id,
             email: user.email
-        }, process.env.JWT_SECRET, { expiresIn: process.env.OTP_EXPIRY_MINUTES } );
+        }, process.env.JWT_SECRET, { expiresIn: '10 minutes' } );
 
         res.status( 200 ).json( {
             message: 'Login Successful',
@@ -176,7 +177,7 @@ exports.resetPassword = async(req, res) => {
             })
         }
 
-        const saltedRounds = await bcrypt.genSalt(process.env.BCRYPT_SALT_ROUNDS)
+        const saltedRounds = await bcrypt.genSalt(10)
         const hashPassword = await bcrypt.hash(newPassword, saltedRounds)
 
         user.password = hashPassword
