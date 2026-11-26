@@ -16,7 +16,7 @@ exports.signUp = async ( req, res ) => {
             } );
         }
 
-        const saltedRounds = await bcrypt.genSalt( 10 );
+        const saltedRounds = await bcrypt.genSalt( process.env.BCRYPT_SALT_ROUNDS );
         const hashPassword = await bcrypt.hash( password, saltedRounds );
         const otp = otp_generator.generate( 6, { upperCaseAlphabets: false, lowerCaseAlphabets: false, specialChars: false } );
 
@@ -117,7 +117,7 @@ exports.login = async ( req, res ) => {
         const token = await jwt.sign( {
             id: user._id,
             email: user.email
-        }, process.env.JWT_SECRET, { expiresIn: '10 minutes' } );
+        }, process.env.JWT_SECRET, { expiresIn: process.env.OTP_EXPIRY_MINUTES } );
 
         res.status( 200 ).json( {
             message: 'Login Successful',
@@ -176,7 +176,7 @@ exports.resetPassword = async(req, res) => {
             })
         }
 
-        const saltedRounds = await bcrypt.genSalt(10)
+        const saltedRounds = await bcrypt.genSalt(process.env.BCRYPT_SALT_ROUNDS)
         const hashPassword = await bcrypt.hash(newPassword, saltedRounds)
 
         user.password = hashPassword
@@ -264,6 +264,7 @@ exports.onboarding = async(req, res) => {
 
         await user.save()
         
+        fs.unlinkSync(file.path)
         const onboaredUser = {
             firstName: user.firstName, lastName: user.lastName, email, gender, dateOfBirth, emailVerified
         }
