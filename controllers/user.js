@@ -177,7 +177,7 @@ exports.resetPassword = async(req, res) => {
                 message: 'User not found'
             } );
         }
-        
+
         if (user.otp !== otp) {
             return res.status(400).json({
                 message: 'Invalid OTP'
@@ -235,12 +235,18 @@ exports.onboarding = async(req, res) => {
         const user = await User.findById(id)
 
         if (!user) {
+            if (file) {
+               fs.unlinkSync(file.path) 
+            }
            return res.status(401).json({
             message: 'Please Login to continue.'
            })
         }
 
         if (user.isOnboarded == true) {
+            if (file) {
+               fs.unlinkSync(file.path) 
+            }
             return res.status(400).json({
                 message: 'Onboarding Already Completed'
             })
