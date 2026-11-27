@@ -118,7 +118,7 @@ exports.login = async ( req, res ) => {
         const token = await jwt.sign( {
             id: user._id,
             email: user.email
-        }, process.env.JWT_SECRET, { expiresIn: '10 minutes' } );
+        }, process.env.JWT_SECRET, { expiresIn: '24 h' } );
 
         res.status( 200 ).json( {
             message: 'Login Successful',
@@ -169,8 +169,15 @@ exports.forgotPassword = async ( req, res ) => {
 
 exports.resetPassword = async(req, res) => {
     try {
-       const  {otp, newPassword} = req.body
+       const  {otp, newPassword, email} = req.body
 
+         const user = await User.findOne( { email: email.toLowerCase() } );
+        if ( !user ) {
+            return res.status( 404 ).json( {
+                message: 'User not found'
+            } );
+        }
+        
         if (user.otp !== otp) {
             return res.status(400).json({
                 message: 'Invalid OTP'
@@ -206,7 +213,7 @@ exports.authenticateUser = async (req, res) => {
         }
 
         const authenticatedUser = {
-            firstName:user.firstName, lastName:user.lastName, email, gender, dateOfBirth, emailVerified
+            firstName:user.firstName, lastName:user.lastName, email: user.email, gender: user.gender, dateOfBirth: user.dateOfBirth, emailVerified: user.emailVerified, isOnboarded: user.isOnboarded, profileImage: user.profileImage
         }
 
         res.status(200).json({
@@ -233,7 +240,7 @@ exports.onboarding = async(req, res) => {
            })
         }
 
-        if (user.onboarded == true) {
+        if (user.isOnboarded == true) {
             return res.status(400).json({
                 message: 'Onboarding Already Completed'
             })
@@ -266,12 +273,12 @@ exports.onboarding = async(req, res) => {
         await user.save()
         
         fs.unlinkSync(file.path)
-        const onboaredUser = {
-            firstName: user.firstName, lastName: user.lastName, email, gender, dateOfBirth, emailVerified
+        const onboardedUser = {
+            firstName:user.firstName, lastName:user.lastName, email: user.email, gender: user.gender, dateOfBirth: user.dateOfBirth, emailVerified: user.emailVerified, isOnboarded: user.isOnboarded, profileImage: user.profileImage
         }
         res.status(200).json({
             message: 'User Onboarding Completed Successfully',
-            data: onboaredUser
+            data: onboardedUser
         })
     } catch (error) {
         if (error) {

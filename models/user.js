@@ -43,7 +43,7 @@ const userSchema = new mongoose.Schema({
         imageId: {
             type: String
         },
-        imageUrL: {
+        imageUrl: {
             type: String
         }
     }

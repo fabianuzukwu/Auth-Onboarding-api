@@ -104,12 +104,17 @@ exports.forgotPasswordValidator = ( req, res, next ) => {
     next();
 };
 
-exports.resetPasswordValidaor = ( req, res, next ) => {
+exports.resetPasswordValidator = ( req, res, next ) => {
     const bodySchema = Joi.object( {
         newPassword: Joi.string().regex( /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/ ).required().messages( {
-            'any.required': 'Password is required',
-            'string.empty': 'Password cannot be Empty',
-            'string.pattern.base': 'Password must be at least 8 characters long and include one uppercase letter, one lowercase letter, one number, and one special character.'
+            'any.required': 'New password is required',
+            'string.empty': 'New password cannot be Empty',
+            'string.pattern.base': 'New password must be at least 8 characters long and include one uppercase letter, one lowercase letter, one number, and one special character.'
+        } ),
+        email: Joi.string().trim().email().required().messages( {
+            'any.required': 'Email is required',
+            'string.empty': 'Email cannot be empty',
+            'string.email': 'Email must be a valid email address'
         } ),
         otp: Joi.string().trim().regex( /^\d{6}$/ ).required().messages( {
             'any.required': 'OTP is required',
